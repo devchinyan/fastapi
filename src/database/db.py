@@ -2,6 +2,7 @@ from .mongodb.mongodb import mongodb
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Type
 from asyncio import run
+from uuid import uuid4
 
 mongodb_client:Type[AsyncIOMotorClient] = None
 
@@ -17,7 +18,11 @@ def make_databases_connection():
             # insert working
             # db = mongodb_client["app_db"]
             # acc = db["accounts"]
+            # key = str(uuid4())
+            # id = f"accounts/{key}"
             # acc.insert_one({
+            #     "_id":id,
+            #     "_key":key,
             #     "message":"hello world"
             # })
             print(mongodb_client)

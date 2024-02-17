@@ -3,9 +3,9 @@ from datetime import datetime
 
 def addBaseFields(doc,profileID:str,collection_name:str)->dict:
     doc = doc if isinstance(doc,dict) else doc.dict()
-    key = uuid4()
-    timestamp = datetime.now().isoformat()
+    key = str(uuid4())
     id = f"{collection_name}/{key}"
+    timestamp = datetime.now().isoformat()
 
     added_base_field_doc = {
         "_id":id,
@@ -16,5 +16,5 @@ def addBaseFields(doc,profileID:str,collection_name:str)->dict:
         "updated_by": profileID,
          **doc
     }
-    
+
     return added_base_field_doc 

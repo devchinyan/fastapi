@@ -1,4 +1,4 @@
-from motor.motor_asyncio import AsyncIOMotorClient,AsyncIOMotorDatabase;
+from motor.motor_asyncio import AsyncIOMotorClient,AsyncIOMotorDatabase
 from typing import Dict, Union, Optional
 
 class MongoDB:
@@ -12,7 +12,7 @@ class MongoDB:
     def connect(self)-> Dict[str, Union[Optional[AsyncIOMotorClient], Optional[Exception]]]:
         try:
             if self.client is None :
-                 self.client = AsyncIOMotorClient(self.uri, username=self.username, password=self.password)
+                 self.client = AsyncIOMotorClient(self.uri,username=self.username, password=self.password,)
                  return {"res":self.client , "err":None}
             else:
                 return {"res":self.client , "err":None}
