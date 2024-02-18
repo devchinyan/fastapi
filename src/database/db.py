@@ -1,16 +1,16 @@
 from .mongodb.mongodb import mongodb
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Type
-from asyncio import run
-from uuid import uuid4
-
+# from asyncio import run
+# from uuid import uuid4
+from src.helper.print.colorlog import ColorLog
 mongodb_client:Type[AsyncIOMotorClient] = None
 
-def make_databases_connection():
+async def make_databases_connection():
     try:
         conn = mongodb.connect()
-        res = conn.get("res")
-        if(res is None): print(conn.get("err"))
+        res = conn.res
+        if(res is None): ColorLog.Red(conn.err)
         if(res is not None): 
             print("mongodb connected")
             global mongodb_client
@@ -26,6 +26,7 @@ def make_databases_connection():
             #     "message":"hello world"
             # })
             print(mongodb_client)
+        await mongodb.setup_collection()
     except Exception as error:
         print("connection error : ",error)
 
