@@ -29,17 +29,17 @@ class ColorLog():
     def Red(*text:Any):
         print(TextColors.FgRed,*text,TextColors.Reset )
 
-    def Blue(text:Any):
+    def Blue(*text:Any):
         print(TextColors.FgBlue,*text,TextColors.Reset )
 
-    def Cyan(text:Any):
+    def Cyan(*text:Any):
         print(TextColors.FgCyan,*text,TextColors.Reset )
     
-    def Magenta(text:Any):
+    def Magenta(*text:Any):
         print(TextColors.FgMagenta,*text,TextColors.Reset )
 
-    def Yellow(text:Any):
+    def Yellow(*text:Any):
         print(TextColors.FgYellow,*text,TextColors.Reset )
 
-    def Green(text:Any):
+    def Green(*text:Any):
         print(TextColors.FgGreen,*text,TextColors.Reset )
