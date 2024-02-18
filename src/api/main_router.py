@@ -15,13 +15,26 @@ def main_router(app:FastAPI):
 
     for r1 in  v1_route_matrices:
         router = APIRouter(prefix=f"/{r1.group}",tags=[r1.tag])
-        for route in r1.route_matrix:
+        for route in r1.route_matrices:
 
-            def controller():
+            async def controller():
                 # middlewares
                 
-                res = route.controller()
-                return res
+                controllerResponse = await route.controller()
+                if controllerResponse.err is not None:
+                    return {
+                        "success":False,
+                        "error":True,
+                        "status_code": controllerResponse.status_code,
+                        "error_object": str(controllerResponse.err)
+                    }
+                else:
+                    return {
+                        "success":True,
+                        "error":False,
+                        "status_code": controllerResponse.status_code,
+                        "data": controllerResponse.res
+                    }
             
 
             router.add_api_route(

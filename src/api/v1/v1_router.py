@@ -6,6 +6,6 @@ v1_route_matrices:List[RouteMatrices] = [
     RouteMatrices(
         group = "auth",
         tag="auth",
-        route_matrix=auth_route_matrices
+        route_matrices=auth_route_matrices
     )
 ]
