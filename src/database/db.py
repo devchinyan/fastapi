@@ -15,16 +15,7 @@ async def make_databases_connection():
             print("mongodb connected")
             global mongodb_client
             mongodb_client = res
-            # insert working
-            # db = mongodb_client["app_db"]
-            # acc = db["accounts"]
-            # key = str(uuid4())
-            # id = f"accounts/{key}"
-            # acc.insert_one({
-            #     "_id":id,
-            #     "_key":key,
-            #     "message":"hello world"
-            # })
+     
             print(mongodb_client)
         await mongodb.setup_collection()
     except Exception as error:
