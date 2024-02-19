@@ -5,9 +5,26 @@ from .public.public_router import public_route_matrices
 def main_router(app:FastAPI):
     public_router = APIRouter(prefix="", tags=["public"])
     for r in public_route_matrices:
+        async def respondHandler():
+            
+            controllerResponse = await r.controller()
+            if controllerResponse.err is not None:
+                return {
+                    "success":False,
+                    "error":True,
+                    "status_code": controllerResponse.status_code,
+                    "error_object": str(controllerResponse.err)
+                }
+            else:
+                return {
+                    "success":True,
+                    "error":False,
+                    "status_code": controllerResponse.status_code,
+                    "data": controllerResponse.res
+                }
         public_router.add_api_route(
             path="/",
-            endpoint=r.controller,
+            endpoint=respondHandler,
             methods=[r.method]
         )
 
@@ -17,7 +34,7 @@ def main_router(app:FastAPI):
         router = APIRouter(prefix=f"/{r1.group}",tags=[r1.tag])
         for route in r1.route_matrices:
 
-            async def controller():
+            async def respondHandler():
                 # middlewares
                 
                 controllerResponse = await route.controller()
@@ -39,7 +56,7 @@ def main_router(app:FastAPI):
 
             router.add_api_route(
                 path=route.path,
-                endpoint=controller,
+                endpoint=respondHandler,
                 methods=[route.method]
             )
             app.include_router(router=router,prefix=f"/v1.0")

@@ -5,5 +5,14 @@ from src.helper.print.colorlog import ColorLog
 def test_server_is_up_and_running(Client:Request):
     response:Response = Client.get("/v1.0/auth/")
     assert response.status_code == 200
+    
+    res = response.json()
+    print(res)
+    ColorLog.Yellow(res)
 
-    assert response.json() == {"message": "testing"}
+    assert res == {
+        "success": True,
+        "error":False,
+        "status_code":200,
+        "data":{"message": "testing"}
+    }

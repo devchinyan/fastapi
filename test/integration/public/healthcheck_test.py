@@ -6,4 +6,12 @@ def test_server_is_up_and_running(Client:Request):
     response:Response = Client.get("/")
     assert response.status_code == 200
 
-    assert response.json() == {"message": "api up and running"}
+    res = response.json()
+    ColorLog.Yellow(res)
+    
+    assert res == {
+        "success": True,
+        "error":False,
+        "status_code":200,
+        "data":{"message": "api up and running"}
+    }
