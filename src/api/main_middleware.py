@@ -16,7 +16,7 @@ def role_permission():
 
 def id_checker(payload)->IdCheckerResponse:
     fetched_doc = []
-    dict_payload = payload if isinstance(dict_payload[key],dict) else payload.dict()
+    dict_payload = payload if isinstance(dict_payload[key],dict) else payload.model_dump(by_alias=True)
     for key in dict_payload.keys():
         if(isinstance(dict_payload[key],dict)):
             idCheckerResponse = id_checker(dict_payload[key])

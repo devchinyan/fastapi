@@ -2,7 +2,7 @@ from uuid import uuid4
 from datetime import datetime
 
 def addBaseFields(doc,profileID:str,collection_name:str)->dict:
-    doc = doc if isinstance(doc,dict) else doc.dict()
+    doc = doc if isinstance(doc,dict) else doc.model_dump(by_alias=True)
     key = str(uuid4())
     id = f"{collection_name}/{key}"
     timestamp = datetime.now().isoformat()

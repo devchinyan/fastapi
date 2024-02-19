@@ -1,10 +1,13 @@
-from pydantic import BaseModel as PydanticBaseModel
+from pydantic import BaseModel as PydanticBaseModel, constr
+from datetime import datetime
+from ..database.mongodb.collection import Collections
+
+uuid_pattern = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"
 
 class BaseModel(PydanticBaseModel):
-    _id:str
-    _key:str
+    _key:constr(pattern=uuid_pattern) 
 
-    created_by:str
-    created_at:str
-    updated_by:str
-    updated_at:str
+    created_by:constr(pattern=f"{Collections.PROFILES}/{uuid_pattern}")
+    created_at:datetime
+    updated_by:constr(pattern=f"{Collections.PROFILES}/{uuid_pattern}")
+    updated_at:datetime
