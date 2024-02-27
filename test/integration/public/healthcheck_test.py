@@ -13,5 +13,6 @@ def test_server_is_up_and_running(Client:Request):
         "success": True,
         "error":False,
         "status_code":200,
+        'error_object': None,
         "data":{"message": "api up and running"}
     }

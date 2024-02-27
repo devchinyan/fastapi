@@ -1,6 +1,6 @@
 from pydantic import BaseModel , Field
 from enum import Enum
-from typing import Any, List, Callable, Optional, Union
+from typing import Any, List, Callable, Optional
   
 class HTTP_METHOD(str, Enum):
     GET="GET"
@@ -8,21 +8,26 @@ class HTTP_METHOD(str, Enum):
     POST="POST"
     DELETE="DELETE"
 
-class Params(BaseModel):
-    add_base_field: Optional[List[str]] = None
-    escape_uuid_checker: Optional[List[str]] = None
-
 class ControllerResponse(BaseModel):
     res: Optional[Any] = Field(default=None)
     status_code: int = Field(default=200)
     err: Optional[Any] = Field(default=None)
 
+Controller =  Callable[[Any, Any, Any, Any], ControllerResponse ]
+
+class ControllerMatrix(BaseModel):
+    func: Controller
+    params: Optional[Any] = Field(default=None)
+    add_base_field_collection: Optional[str] = Field(default=None)
+    escape_uuid_checker: Optional[List[str]] = Field(default=[])
+
 class RouteMatrix(BaseModel):
     path: str
     method: HTTP_METHOD
-    allowed_roles: List[str]
-    controller: Callable[..., ControllerResponse ]
-    params: Optional[Params] = None
+    grants: List[str]
+    controller: ControllerMatrix
+    payloadModel:Optional[Any] = Field(default=None)
+    responseModel:Any
 
 class RouteMatrices(BaseModel):
     """
