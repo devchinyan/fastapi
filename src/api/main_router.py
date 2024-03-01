@@ -31,7 +31,7 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix):
         if route_matrix.controller.add_base_field_collection is not None:
             collection_name = route_matrix.controller.add_base_field_collection
             profile_id = jwtData.get("profileID")
-            added_based_field = addBaseFields(validated_payload,profile_id,collection_name)
+            added_based_field = addBaseFields(collection_name,validated_payload,profile_id)
             validated_payload = route_matrix.payloadModel(**added_based_field)
 
         controller_response:ControllerResponse = await route_matrix.controller.func(
@@ -41,7 +41,6 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix):
             params=route_matrix.controller.params
         )
         if controller_response.err is not None:
-            ColorLog.Red("controller_response : ", controller_response, "\n route_matrix.controller.func : ",route_matrix.controller.func)
             return Response(
                 success=False,
                 error=True,
@@ -85,15 +84,12 @@ def main_router(app:FastAPI):
         router = APIRouter(prefix=f"/{r1.group}",tags=[r1.tag])
         for route in r1.route_matrices:
             if route.payloadModel is not None:
-                ColorLog.Yellow("__r1__ : ", r1  )
                 async def respondHandler(req:Request,payload:route.payloadModel,r=Query(default=route,include_in_schema=False)): 
                     res = await endpoint_func(req,r)
-                    print("res : ",res)
                     return res
             else:
                 async def respondHandler(req:Request,r=Query(default=route,include_in_schema=False)):
                     res = await endpoint_func(req,r)
-                    print("res : ",res)
                     return res
 
             router.add_api_route(

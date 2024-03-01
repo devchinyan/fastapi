@@ -13,7 +13,7 @@ auth_route_matrices:List[RouteMatrix] = [
         responseModel=TestResponse
     ),
     RouteMatrix(
-        path="/registration",
+        path="/registration/create",
         method=HTTP_METHOD.POST,
         grants=["*"],
         controller=ControllerMatrix(func=registration_handler),

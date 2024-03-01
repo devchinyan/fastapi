@@ -1,8 +1,9 @@
-from requests import Request,Response
+from requests import Response
+from fastapi.testclient import TestClient
 from src.helper.print.colorlog import ColorLog
 # import asyncio
 
-def test_server_is_up_and_running(Client:Request):
+def test_server_is_up_and_running(Client:TestClient):
     response:Response = Client.get("/")
     assert response.status_code == 200
 
