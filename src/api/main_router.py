@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter,Request
+from fastapi import FastAPI, APIRouter,Request, Body, Query
 from pydantic import BaseModel as PydanticModel, Field
 from typing import Optional
 from .v1.v1_router import v1_route_matrices
@@ -61,15 +61,21 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix):
 def main_router(app:FastAPI):
     public_router = APIRouter(prefix="", tags=["public"])
     for r in public_route_matrices:
-       
-        async def respondHandler(req:Request,r=r):
-            return await endpoint_func(req,r)
-        ColorLog.Magenta(f"{r.method} : {r.path}")
+        if r.payloadModel is not None:
+            async def respondHandler(payload:r.payloadModel,req:Request,r=Query(default=r,include_in_schema=False)): # type: ignore
+                print(payload)
+                return await endpoint_func(req,r)
+        else:
+             async def respondHandler(req:Request,r=Query(default=r,include_in_schema=False)):
+                return await endpoint_func(req,r)
+
         public_router.add_api_route(
             path=r.path,
             endpoint=respondHandler,
             methods=[r.method],
+            # dependencies=r.payloadModel.schema() if r.payloadModel is not None else None
         )
+        
 
     app.include_router(router=public_router,prefix="")
 
@@ -77,12 +83,16 @@ def main_router(app:FastAPI):
         router = APIRouter(prefix=f"/{r1.group}",tags=[r1.tag])
         for route in r1.route_matrices:
             if route.payloadModel is not None:
-                async def respondHandler(req:Request,r=r):
-                    return endpoint_func(req,r)
+                async def respondHandler(req:Request,payload:route.payloadModel,r=Query(default=r,include_in_schema=False)): 
+                    return await endpoint_func(req,r)
+            else:
+                async def respondHandler(req:Request,r=Query(default=r,include_in_schema=False)):
+                    return await endpoint_func(req,r)
 
             router.add_api_route(
                 path=route.path,
                 endpoint=respondHandler,
                 methods=[route.method],
             )
+
             app.include_router(router=router,prefix=f"/v1.0")

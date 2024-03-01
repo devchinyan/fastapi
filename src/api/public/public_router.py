@@ -9,6 +9,13 @@ from typing import List
 # public_router.add_api_route("/",health_check_handler,methods=["GET"])
 
 public_route_matrices:List[RouteMatrix] = [
+     RouteMatrix(
+        path="/",
+        method=HTTP_METHOD.GET,
+        grants=["*"],
+        controller=ControllerMatrix(func=health_check_handler),
+        responseModel=HealthCheckResponse
+    ),
         RouteMatrix(
         path="/echo",
         method=HTTP_METHOD.POST,
@@ -17,11 +24,5 @@ public_route_matrices:List[RouteMatrix] = [
         payloadModel=EchoPayload,
         responseModel=HealthCheckResponse
     ),
-    RouteMatrix(
-        path="/",
-        method=HTTP_METHOD.GET,
-        grants=["*"],
-        controller=ControllerMatrix(func=health_check_handler),
-        responseModel=HealthCheckResponse
-    ),
+   
 ]
