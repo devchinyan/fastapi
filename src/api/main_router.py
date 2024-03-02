@@ -31,11 +31,12 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:O
         
         if route_matrix.controller.add_base_field_collection is not None:
             collection_name = route_matrix.controller.add_base_field_collection
-            profile_id = jwtData.get("profileID")
+            profile_id = jwtData.get("profileID") 
             added_based_field = addBaseFields(collection_name,validated_payload,profile_id)
             validated_payload = route_matrix.payloadModel(**added_based_field)
 
         controller_response:ControllerResponse = await route_matrix.controller.func(
+            req,
             jwtData, 
             validated_payload, 
             fetched_data, 

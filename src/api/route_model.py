@@ -1,6 +1,7 @@
 from pydantic import BaseModel , Field
 from enum import Enum
 from typing import Any, List, Callable, Optional
+from fastapi import Request
   
 class HTTP_METHOD(str, Enum):
     GET="GET"
@@ -13,7 +14,7 @@ class ControllerResponse(BaseModel):
     status_code: int = Field(default=200)
     err: Optional[Any] = Field(default=None)
 
-Controller =  Callable[[Any, Any, Any, Any], ControllerResponse ]
+Controller =  Callable[[Request,Any, Any, Any, Any], ControllerResponse ]
 
 class ControllerMatrix(BaseModel):
     func: Controller
