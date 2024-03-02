@@ -1,5 +1,5 @@
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from motor.core import AgnosticCollection
+from motor.motor_asyncio import AsyncIOMotorClient
+from motor.core import AgnosticCollection, AgnosticDatabase
 from typing import Any, List
 from pydantic import BaseModel
 from .collection import Collections
@@ -33,7 +33,7 @@ class MongoDB:
         except Exception as error:
             return Connection(res=None, err=error)
         
-    def get_db(self,dbname = None)->AsyncIOMotorDatabase:
+    def get_db(self,dbname = None)->AgnosticDatabase:
         database_name = self.dbname if dbname is None else dbname
         create_connection = self.connect()
         client = create_connection.res
