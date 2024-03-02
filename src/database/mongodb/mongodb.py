@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from .collection import Collections
 from ...helper.print.colorlog import ColorLog
 from src.seeds.seed_model import SeedMatrix
+from asyncio import get_running_loop
 
 from pymongo.results import UpdateResult
 class Connection(BaseModel):
@@ -23,6 +24,7 @@ class MongoDB:
         try:
             if self.client is None :
                 self.client = AsyncIOMotorClient(self.uri,username=self.username, password=self.password,)
+                self.client.get_io_loop = get_running_loop
                 ColorLog.Green("mongodb connection created successfully")
                 return Connection(res=self.client, err=None) 
             else:

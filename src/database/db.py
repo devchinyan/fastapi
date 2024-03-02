@@ -27,3 +27,4 @@ def disconnect_databases():
     if mongodb_client is not None:
         mongodb_client.close()
         print("mongo db shuted down")
+    pass

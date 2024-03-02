@@ -1,25 +1,25 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pytest import fixture, hookimpl
+from pytest import fixture
+from pytest_asyncio import fixture as async_fixture
 from main import app
 from src.database.mongodb.mongodb import mongodb_client
 from motor.core import AgnosticClient
-from typing import Type
+from httpx import AsyncClient
 
-mongodb_client:AgnosticClient = None
 
 @fixture(scope="session")
-def App():
-    # db = mongodb_client.get_database()
-    # db.
-    yield app
-    if mongodb_client is not None:
-        mongodb_client.close()
-
+def App()->FastAPI:
+    return app
 
 @fixture(scope="session")
 def Client(App) -> TestClient:
     return TestClient(App)
+
+@async_fixture(scope="session")
+async def Async_Client(App):
+    async with AsyncClient(app=App, base_url="http://localhost:8000") as asyncClient:
+        yield asyncClient
     
 
 
