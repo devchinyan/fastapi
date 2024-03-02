@@ -28,7 +28,7 @@ async def test_register(App):
     try:
         async with AsyncClient(app=App, base_url="http://localhost:8000") as Async_Client:
             payload:dict = {
-                "name":"CheeseChickenBurger",
+                "name":"CheesyChickenBurger",
                 "email":"ccb@merrybrown.my",
                 "password":"CCB"
             }

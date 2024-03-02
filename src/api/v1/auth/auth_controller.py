@@ -29,7 +29,7 @@ async def registration_handler(jwtData:Optional[dict], validated_payload:Registr
             AccountFields(
                 profileID=profile.get("_id"),
                 email=validated_payload.email,
-                password=PasswordFields(**hashResult.dict()) 
+                password=PasswordFields(**hashResult.model_dump()) 
             ),profile.get("_id")
         )
 

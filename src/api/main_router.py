@@ -61,41 +61,45 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix):
 
 def main_router(app:FastAPI):
     public_router = APIRouter(prefix="", tags=["public"])
-    for r in public_route_matrices:
-        if r.payloadModel is not None:
-            async def respondHandler(payload:r.payloadModel,req:Request,r=Query(default=r,include_in_schema=False)): # type: ignore
+    for public_route_matrix in public_route_matrices:
+        if public_route_matrix.payloadModel is not None:
+            async def respondHandler(payload:public_route_matrix.payloadModel,req:Request,r=Query(default=public_route_matrix,include_in_schema=False)): # type: ignore
                 print(payload)
-                return await endpoint_func(req,r)
+                return await endpoint_func(req,public_route_matrix)
         else:
-             async def respondHandler(req:Request,r=Query(default=r,include_in_schema=False)):
-                return await endpoint_func(req,r)
+             async def respondHandler(req:Request,public_route_matrix=Query(default=public_route_matrix,include_in_schema=False)):
+                return await endpoint_func(req,public_route_matrix)
 
         public_router.add_api_route(
-            path=r.path,
+            path=public_route_matrix.path,
             endpoint=respondHandler,
-            methods=[r.method],
+            methods=[public_route_matrix.method],
             # dependencies=r.payloadModel.schema() if r.payloadModel is not None else None
         )
         
 
     app.include_router(router=public_router,prefix="")
 
-    for r1 in  v1_route_matrices:
-        router = APIRouter(prefix=f"/{r1.group}",tags=[r1.tag])
-        for route in r1.route_matrices:
-            if route.payloadModel is not None:
-                async def respondHandler(req:Request,payload:route.payloadModel,r=Query(default=route,include_in_schema=False)): 
+    for v1_group_route_matrices in  v1_route_matrices:
+        router = APIRouter(prefix=f"/{v1_group_route_matrices.group}",tags=[v1_group_route_matrices.tag])
+        for v1_group_route_matrix in v1_group_route_matrices.route_matrices:
+            if v1_group_route_matrix.payloadModel is not None:
+                async def respondHandler(
+                        req:Request,
+                        payload:v1_group_route_matrix.payloadModel,
+                        r=Query(default=v1_group_route_matrix,include_in_schema=False)
+                    ): 
                     res = await endpoint_func(req,r)
                     return res
             else:
-                async def respondHandler(req:Request,r=Query(default=route,include_in_schema=False)):
+                async def respondHandler(req:Request,r=Query(default=v1_group_route_matrix,include_in_schema=False)):
                     res = await endpoint_func(req,r)
                     return res
 
             router.add_api_route(
-                path=route.path,
+                path=v1_group_route_matrix.path,
                 endpoint=respondHandler,
-                methods=[route.method],
+                methods=[v1_group_route_matrix.method],
             )
 
             app.include_router(router=router,prefix=f"/v1.0")
