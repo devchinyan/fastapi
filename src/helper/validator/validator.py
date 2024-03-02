@@ -1,6 +1,6 @@
 from fastapi import Request
 from pydantic import BaseModel
-from typing import Type, List
+from typing import Type, List, Optional
 from re import search, split
 from json import loads
 from ...helper.cryptography.jwt import getJwtDATA
@@ -123,31 +123,34 @@ async def id_validator(ids:List[str]):
         ColorLog.Red("id_validator Err : ",err)
         return None,err
     
-async def validation_middleware(req:Request,payload_model:Type[BaseModel],exclude_regex:List[str],grants:List[str]):
+async def validation_middleware(req:Request,payload_model:Type[BaseModel],exclude_regex:List[str],grants:List[str],validated_payload:Optional[BaseModel]=None):
     """main validation middleware"""
     try:
-        jwtData, validated_payload, fetched_data = None, None, []
+        jwtData, fetched_data = None, []
         if "*" not in grants:
             jwtData,err = jwt_validator(req)
-            if err is not None: return None,err
+            if err is not None: return None,None,None,err
+        ColorLog.Cyan(validated_payload)
+        if validated_payload is not None:
+            ColorLog.Yellow(validated_payload)
+            payload,err = await payload_deserialization(req)
+            if err is not None: return None,None,None, err
 
-        payload,err = await payload_deserialization(req)
-        if err is not None: return None,err
+            if payload_model is not None:
+                validated_payload,err = payload_validator(payload,payload_model) 
+                if err is not None: return None,None,None, err
 
         if "*" not in grants:
-            valid_role,err = role_validation(payload,grants)
-            if err is not None: return None,err
-            if not valid_role: return None, Exception("Invalid Role")
+            valid_role,err = role_validation(jwtData,grants)
+            if err is not None: return None,None,None,err
+            if not valid_role: return None,None,None, Exception("Invalid Role")
 
-        if payload_model is not None:
-            validated_payload,err = payload_validator(payload,payload_model) 
-            if err is not None: return None,err
-
+        payload = {} if validated_payload is None else validated_payload.model_dump()
         ids,err = get_id_from_payload(payload,exclude_regex)
-        if err is not None: return None,err
+        if err is not None: return None,None,None, err
 
         fetched_data,err = await id_validator(ids)
-        if err is not None: return None,err
+        if err is not None: return None,None,None, err
 
         return jwtData, validated_payload, fetched_data, None
     except Exception as err:

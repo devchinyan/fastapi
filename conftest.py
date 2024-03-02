@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from pytest import fixture
+from pytest import fixture, hookimpl
 from main import app
 
 
@@ -14,7 +14,15 @@ def Client(App) -> TestClient:
     return TestClient(App)
     
 
+@hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
 
+    test_fn = item.obj
+    docstring = getattr(test_fn, '__doc__')
+    if docstring:
+        report.nodeid = docstring
 
 # from src.helper.cryptography.password import base64String
 

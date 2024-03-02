@@ -8,7 +8,7 @@ from ..helper.validator.validator import validation_middleware
 from ..helper.doc.doc_helper import addBaseFields
 from ..helper.print.colorlog import ColorLog
 
-async def endpoint_func(req:Request,route_matrix:RouteMatrix):
+async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:Optional[PydanticModel]=None):
     try:
         ColorLog.Magenta("endpoint_func is running")
         class Response(PydanticModel):
@@ -22,7 +22,8 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix):
             req,
             payload_model=route_matrix.payloadModel,
             exclude_regex=route_matrix.controller.escape_uuid_checker,
-            grants=route_matrix.grants
+            grants=route_matrix.grants,
+            validated_payload=validated_payload
         )
         if err is not None:
             ColorLog.Magenta("Err 400 or 401 : ",err)
@@ -64,8 +65,7 @@ def main_router(app:FastAPI):
     for public_route_matrix in public_route_matrices:
         if public_route_matrix.payloadModel is not None:
             async def respondHandler(payload:public_route_matrix.payloadModel,req:Request,r=Query(default=public_route_matrix,include_in_schema=False)): # type: ignore
-                print(payload)
-                return await endpoint_func(req,public_route_matrix)
+                return await endpoint_func(req,public_route_matrix,payload)
         else:
              async def respondHandler(req:Request,public_route_matrix=Query(default=public_route_matrix,include_in_schema=False)):
                 return await endpoint_func(req,public_route_matrix)
@@ -89,7 +89,7 @@ def main_router(app:FastAPI):
                         payload:v1_group_route_matrix.payloadModel,
                         r=Query(default=v1_group_route_matrix,include_in_schema=False)
                     ): 
-                    res = await endpoint_func(req,r)
+                    res = await endpoint_func(req,r,payload)
                     return res
             else:
                 async def respondHandler(req:Request,r=Query(default=v1_group_route_matrix,include_in_schema=False)):
