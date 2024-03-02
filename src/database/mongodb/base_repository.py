@@ -1,6 +1,7 @@
 from .mongodb import mongodb
 from motor.core import AgnosticCollection
-
+from pydantic import BaseModel
+from typing import Optional, Tuple
 class BaseRepository:
     def __init__(self,collection_name:str):
         self.collection_name = collection_name
@@ -14,6 +15,18 @@ class BaseRepository:
     async def fetch(self,doc_id:str):
         fetched = await self.collection.find_one(filter={"_id": doc_id})
         return fetched
+    
+    async def find_one(self,query:dict,Model:Optional[BaseModel]=None)->Tuple[Optional[dict],Optional[BaseModel],Optional[Exception]]:
+        try:
+            fetched = await self.collection.find_one(filter=query)
+            if fetched is None: return None, None, None
+            if Model is None:
+                return fetched,None,None
+            else:
+                parsed = Model(**fetched)
+                return fetched,parsed,None
+        except Exception as error:
+            return None,None,error
 
     async def update(self,doc_id:str,doc_updates:dict):
         updated_doc = await self.collection.find_one_and_update(

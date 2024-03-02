@@ -1,7 +1,8 @@
-from .auth_response import TestResponse, RegisterResponse
+from .auth_response import TestResponse, RegisterResponse,LoginResponse
 from ...route_model import ControllerResponse
-from .auth_payload import RegistrationPayload
-from ....helper.cryptography.password import hash
+from .auth_payload import RegistrationPayload,LoginPayload
+from ....helper.cryptography.password import verify_password, hash
+from ....helper.cryptography.jwt import getFingerPrint, generateJWT
 from ....model.profile_model import ProfileFields, ProfileModel
 from ....model.account_model import AccountFields, PasswordFields, AccountModel
 from ....helper.doc.doc_helper import addBaseFields
@@ -48,17 +49,48 @@ async def registration_handler(req:Request,jwtData:Optional[dict], validated_pay
         return ControllerResponse(err=error,status_code=500)
     
 
-async def login_handler(req:Request,jwtData:Optional[dict], validated_payload:RegistrationPayload, fetched_data:List[Dict], params:Any) -> ControllerResponse:
+async def login_handler(req:Request,jwtData:Optional[dict], validated_payload:LoginPayload, fetched_data:List[Dict], params:Any) -> ControllerResponse:
     try:
-
         # validate user
+        ColorLog.Cyan(validated_payload)
+        account,parsedAccount,err = await accountRepo.find_one({"email":validated_payload.email},AccountModel)
+        if err is not None: raise err
+        if account is None : return ControllerResponse(err=Exception("Invalid Email or Password 1"),status_code=401)
 
+        profile,_,err = await profileRepo.find_one({"email":validated_payload.email})
+        if err is not None: raise err
+        if profile is None: return ControllerResponse(err=Exception("Profile Doesn't Exist"),status_code=401)
+
+        parsedAccount:AccountModel = parsedAccount
+        password, saltedHash,salt = validated_payload.password, parsedAccount.password.hash, parsedAccount.password.salt
+        ColorLog.Cyan(password,salt,saltedHash)
+        valid = verify_password(password=password,salt=salt,hashed_password=saltedHash)
+        if valid == False : return ControllerResponse(err=Exception("Invalid Email or Password 2"),status_code=401)
+        ColorLog.Cyan("valid value = ",valid)
         # log login data
-
-        # generate fingerprint and jwt
-        return ControllerResponse(res=RegisterResponse(
-            message="logined",
+        user_agent,x_forwarded_for,accept_language,web_fingerprint,err = getFingerPrint(req)
+        if err : ColorLog.Red("getFingerPrint err : ",err)
+        
+     
+        
+        ColorLog.Green(profile)
+        # generate jwt
+        access_token = generateJWT({
+            "accountID":account["_id"],
+            "web_fingerprint":web_fingerprint,
+            **profile
+        })
+   
+        return ControllerResponse(res=LoginResponse(
+            profile=profile,
+            access_token = access_token,
+            web_fingerprint=web_fingerprint, 
+            user_agent=user_agent, 
+            x_forwarded_for=x_forwarded_for,
+            accept_language=accept_language 
         ))
+    
     except Exception as error:
+        ColorLog.Red(error)
         return ControllerResponse(err=error,status_code=500)
 

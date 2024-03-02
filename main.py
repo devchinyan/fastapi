@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from src.api.main_router import main_router
 from src.database.db import make_databases_connection, disconnect_databases
 from src.config.config import config
-import json
+# import json
 
 # Create an instance of the FastAPI class
 app = FastAPI()

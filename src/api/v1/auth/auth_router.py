@@ -1,8 +1,8 @@
 from ...route_model import RouteMatrix,HTTP_METHOD, ControllerMatrix
 from typing import List
-from .auth_controller import test_handler, registration_handler
-from .auth_payload import RegistrationPayload
-from .auth_response import TestResponse, RegisterResponse
+from .auth_controller import test_handler, registration_handler,login_handler
+from .auth_payload import RegistrationPayload, LoginPayload
+from .auth_response import TestResponse, RegisterResponse,LoginResponse
 
 auth_route_matrices:List[RouteMatrix] = [
     RouteMatrix(
@@ -19,5 +19,13 @@ auth_route_matrices:List[RouteMatrix] = [
         controller=ControllerMatrix(func=registration_handler),
         payloadModel=RegistrationPayload,
         responseModel=RegisterResponse
+    ),
+    RouteMatrix(
+        path="/login",
+        method=HTTP_METHOD.POST,
+        grants=["*"],
+        controller=ControllerMatrix(func=login_handler),
+        payloadModel=LoginPayload,
+        responseModel=LoginResponse
     ),
 ]

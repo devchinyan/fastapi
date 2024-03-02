@@ -4,6 +4,7 @@ from typing import Type
 # from asyncio import run
 # from uuid import uuid4
 from src.helper.print.colorlog import ColorLog
+from src.seeds.main import seedMatrices
 mongodb_client:Type[AsyncIOMotorClient] = None
 
 async def make_databases_connection():
@@ -18,6 +19,7 @@ async def make_databases_connection():
      
             print(mongodb_client)
         await mongodb.setup_collection()
+        await mongodb.seed_data(seedMatrices=seedMatrices)
     except Exception as error:
         print("connection error : ",error)
 

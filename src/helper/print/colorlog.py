@@ -25,7 +25,7 @@ class TextColors:
     BgCyan = "\x1b[46m"
     BgWhite = "\x1b[47m"
 
-class ColorLog():
+class ColorLog:
     def Red(*text:Any):
         print(TextColors.FgRed,*text,TextColors.Reset )
 

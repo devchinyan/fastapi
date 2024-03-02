@@ -8,3 +8,11 @@ class TestResponse(BaseModel):
 class RegisterResponse(TestResponse):
     profile:ProfileModel
     # account:AccountModel
+
+class LoginResponse(BaseModel):
+    profile:ProfileModel
+    access_token: str
+    web_fingerprint:str 
+    user_agent:str
+    x_forwarded_for:str
+    accept_language:str

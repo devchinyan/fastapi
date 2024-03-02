@@ -130,9 +130,8 @@ async def validation_middleware(req:Request,payload_model:Type[BaseModel],exclud
         if "*" not in grants:
             jwtData,err = jwt_validator(req)
             if err is not None: return None,None,None,err
-        ColorLog.Cyan(validated_payload)
+
         if validated_payload is not None:
-            ColorLog.Yellow(validated_payload)
             payload,err = await payload_deserialization(req)
             if err is not None: return None,None,None, err
 

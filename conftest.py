@@ -2,11 +2,19 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pytest import fixture, hookimpl
 from main import app
+from src.database.mongodb.mongodb import mongodb_client
+from motor.core import AgnosticClient
+from typing import Type
 
+mongodb_client:AgnosticClient = None
 
 @fixture(scope="session")
-def App() -> FastAPI:
-    return app
+def App():
+    # db = mongodb_client.get_database()
+    # db.
+    yield app
+    if mongodb_client is not None:
+        mongodb_client.close()
 
 
 @fixture(scope="session")
@@ -14,15 +22,7 @@ def Client(App) -> TestClient:
     return TestClient(App)
     
 
-@hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    report = outcome.get_result()
 
-    test_fn = item.obj
-    docstring = getattr(test_fn, '__doc__')
-    if docstring:
-        report.nodeid = docstring
 
 # from src.helper.cryptography.password import base64String
 

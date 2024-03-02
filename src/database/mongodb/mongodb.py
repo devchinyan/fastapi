@@ -1,9 +1,12 @@
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-from typing import Any
+from motor.core import AgnosticCollection
+from typing import Any, List
 from pydantic import BaseModel
 from .collection import Collections
 from ...helper.print.colorlog import ColorLog
+from src.seeds.seed_model import SeedMatrix
 
+from pymongo.results import UpdateResult
 class Connection(BaseModel):
     res: Any
     err: Any
@@ -48,6 +51,27 @@ class MongoDB:
         except Exception as error:
             ColorLog.Red(error)
 
+    async def seed_data(self,seedMatrices:List[SeedMatrix]):
+        try:
+            db = self.get_db()
+            for seedMatrix in seedMatrices:
+                col:AgnosticCollection = db[seedMatrix.collection_name]
+                upserted = 0
+                for doc in seedMatrix.data:
+                    if doc.get("_id") is None: continue
+                    result:UpdateResult = await col.update_one(
+                        filter={"_id":doc["_id"]},
+                        update={"$set":doc},
+                        upsert=True
+                    )
+                    upserted += 1 if result.upserted_id is not None else 0
+                ColorLog.Green(f"UPSERTED {upserted} data into {seedMatrix.collection_name}")
+                    
+
+
+        except Exception as error:
+            ColorLog.Red("seed_data : ",error)
+
         
 mongodb = MongoDB(
     username="developer",
@@ -55,4 +79,5 @@ mongodb = MongoDB(
     dbname="app_db"
 )
 
-mongodb_client = mongodb.connect()
+mongodb_connection = mongodb.connect()
+mongodb_client = mongodb_connection.res
