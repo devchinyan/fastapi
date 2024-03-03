@@ -17,12 +17,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def getFingerPrint(req:Request):
     try:
-        user_agent = req.headers.get("User-Agent", "")
+        user_agent = req.headers.get("User-Agent", "None")
         x_forwarded_for = req.headers.get("X-Forwarded-For", req.client.host)
-        accept_language = req.headers.get("Accept-Language", "") if req.headers.get("Accept-Language", "") else "None"
-        
+        accept_language = req.headers.get("Accept-Language", "None") 
 
-        # Concatenate and hash the extracted information to create a fingerprint
         web_fingerprint = pwd_context.hash(f"{user_agent}{x_forwarded_for}{accept_language}")
       
         return user_agent,x_forwarded_for,accept_language,web_fingerprint,None
