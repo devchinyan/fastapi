@@ -1,6 +1,6 @@
-from fastapi import FastAPI, APIRouter, Request, Query, Depends
+from fastapi import FastAPI, APIRouter, Request, Query, Depends, HTTPException
 from pydantic import BaseModel as PydanticModel, Field
-from typing import Optional
+from typing import Optional, Literal,List, TypeVar, Generic
 from .v1.v1_router import v1_route_matrices
 from .route_model import RouteMatrix, ControllerResponse, HTTP_METHOD
 from .public.public_router import public_route_matrices
@@ -9,15 +9,19 @@ from ..helper.print.colorlog import ColorLog
 from ..helper.doc.doc_helper import addBaseFields
 from ..helper.cryptography.jwt import JWT_data
 
+
+T = TypeVar('T')
+class Response(PydanticModel, Generic[T]):
+    success: bool = Field(examples=[True])
+    error: bool = Field(examples=[False])
+    status_code:int = Field(examples=[200])
+    error_object: Optional[str] = Field(default=None,examples=[None]) 
+    data: T 
+
+
 async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:Optional[PydanticModel]=None):
     try:
         ColorLog.Magenta("endpoint_func is running")
-        class Response(PydanticModel):
-            success: bool
-            error: bool
-            status_code:int
-            error_object: Optional[str] = Field(default=None)
-            data: Optional[route_matrix.responseModel] = Field(default=None)
 
         jwtData, validated_payload, fetched_data, err = await validation_middleware(
             req,
@@ -28,7 +32,10 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:O
         )
         if err is not None:
             ColorLog.Magenta("Err 400 or 401 : ",err)
-            return Response(success=False,error=True,status_code=400,error_object=str(err),data=None)
+            raise HTTPException(
+                status_code=400,
+                detail=Response(success=False,error=True,status_code=400,error_object=str(err),data=None)
+            )
         
         if route_matrix.controller.add_base_field_collection is not None:
             jwtData:JWT_data = jwtData
@@ -45,13 +52,17 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:O
             params=route_matrix.controller.params
         )
         if controller_response.err is not None:
-            return Response(
-                success=False,
-                error=True,
+            raise HTTPException(
                 status_code=controller_response.status_code,
-                error_object=str(controller_response.err),
-                data=None
+                detail=Response(
+                    success=False,
+                    error=True,
+                    status_code=controller_response.status_code,
+                    error_object=str(controller_response.err),
+                    data=None
+                )
             )
+            
         
         return Response(
             success=True,
@@ -66,22 +77,25 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:O
 def main_router(app:FastAPI):
     public_router = APIRouter(prefix="", tags=["public"])
     for public_route_matrix in public_route_matrices:
+       
         if public_route_matrix.payloadModel is not None:
             async def respondHandler(
                     req:Request,
                     payload:public_route_matrix.payloadModel = Depends() if public_route_matrix.method == HTTP_METHOD.GET else None,
                     r=Query(default=public_route_matrix,include_in_schema=False)
-                ): # type: ignore
+                )->Response[public_route_matrix.responseModel]: # type: ignore
                 return await endpoint_func(req,public_route_matrix,payload)
         else:
-             async def respondHandler(req:Request,public_route_matrix=Query(default=public_route_matrix,include_in_schema=False)):
+             async def respondHandler(req:Request,public_route_matrix=Query(default=public_route_matrix,include_in_schema=False))->Response[public_route_matrix.responseModel]:
                 return await endpoint_func(req,public_route_matrix)
+
+        
 
         public_router.add_api_route(
             path=public_route_matrix.path,
             endpoint=respondHandler,
             methods=[public_route_matrix.method],
-            # dependencies=r.payloadModel.schema() if r.payloadModel is not None else None
+            # response_model=SuccessResponse
         )
         
 
@@ -95,13 +109,14 @@ def main_router(app:FastAPI):
                         req:Request,
                         payload:v1_group_route_matrix.payloadModel = Depends() if v1_group_route_matrix.method== HTTP_METHOD.GET else None,
                         r=Query(default=v1_group_route_matrix,include_in_schema=False)
-                    ): 
+                    )->Response[v1_group_route_matrix.responseModel]: 
                     res = await endpoint_func(req,r,payload)
                     return res
             else:
-                async def respondHandler(req:Request,r=Query(default=v1_group_route_matrix,include_in_schema=False)):
+                async def respondHandler(req:Request,r=Query(default=v1_group_route_matrix,include_in_schema=False))->Response[v1_group_route_matrix.responseModel]: 
                     res = await endpoint_func(req,r)
                     return res
+            
 
             router.add_api_route(
                 path=v1_group_route_matrix.path,
