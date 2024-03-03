@@ -3,9 +3,9 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from pytest_asyncio import fixture as async_fixture
 from main import app
-from src.database.mongodb.mongodb import mongodb_client
-from motor.core import AgnosticClient
-from httpx import AsyncClient
+from src.helper.print.colorlog import ColorLog
+from src.helper.cryptography.password import base64String
+from httpx import AsyncClient, Response as AsyncResponse
 
 
 @fixture(scope="session")
@@ -21,6 +21,25 @@ async def Async_Client(App):
     async with AsyncClient(app=App, base_url="http://localhost:8000") as asyncClient:
         yield asyncClient
     
+@async_fixture(scope="session")
+async def Free_Membership_Token(Async_Client:AsyncClient):
+    try:
+        payload:dict = {
+            "email":"chinyan@lifelinelab.io",
+            "password":base64String("P@ssw0rd")
+        }
+        response:AsyncResponse = await Async_Client.post("/v1.0/auth/login",json=payload)
+    
+
+        res:dict = response.json()
+        
+        # assert res.get("data").get("profile").get("name") == "Chin Yan"
+        # assert len(res.get("data").get("access_token")) > 0
+        return res.get("data").get("access_token")
+ 
+    except Exception as error:
+        ColorLog.Red(str(error))
+        raise
 
 
 
