@@ -25,7 +25,7 @@ def getFingerPrint(req:Request):
       
         return user_agent,x_forwarded_for,accept_language,web_fingerprint,None
     except Exception as error:
-        ColorLog.Red(f"getFingerPrint error : {error}")
+        ColorLog.Red(f"getFingerPrint error : {str(error)}")
         return None,None,None,None,error
 
 def generateJWT(data: dict, expires_delta: timedelta = None)->str:
