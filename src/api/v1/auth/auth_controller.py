@@ -5,21 +5,21 @@ from ....helper.cryptography.password import verify_password, hash
 from ....helper.cryptography.jwt import getFingerPrint, generateJWT
 from ....model.profile_model import ProfileFields, ProfileModel, UserRoleEnum
 from ....model.account_model import AccountFields, PasswordFields, AccountModel
-from ....helper.doc.doc_helper import addBaseFields
-from typing import Any, Optional,List,Dict
+from ....helper.doc.doc_helper import addBaseFields,FetchedData
+from typing import Any, Optional
 from fastapi import Request
 from ....helper.print.colorlog import ColorLog
 from ....database.mongodb.collection import Collections
 from ....repository.account_repo import accountRepo
 from ....repository.profile_repo import profileRepo
 
-async def test_handler(req:Request,jwtData:Optional[dict], validated_payload:Any, fetched_data:List[Dict], params:Any) -> ControllerResponse:
+async def test_handler(req:Request,jwtData:Optional[dict], validated_payload:Any, fetched_data:FetchedData, params:Any) -> ControllerResponse:
     try:
         return ControllerResponse(res=TestResponse(message="testing"))
     except Exception as error:
         return ControllerResponse(err=error,status_code=500)
     
-async def registration_handler(req:Request,jwtData:Optional[dict], validated_payload:RegistrationPayload, fetched_data:List[Dict], params:Any) -> ControllerResponse:
+async def registration_handler(req:Request,jwtData:Optional[dict], validated_payload:RegistrationPayload, fetched_data:FetchedData, params:Any) -> ControllerResponse:
     try:
         hashResult = hash(password=validated_payload.password)
         profile = addBaseFields(
@@ -49,7 +49,7 @@ async def registration_handler(req:Request,jwtData:Optional[dict], validated_pay
         return ControllerResponse(err=error,status_code=500)
     
 
-async def login_handler(req:Request,jwtData:Optional[dict], validated_payload:LoginPayload, fetched_data:List[Dict], params:Any) -> ControllerResponse:
+async def login_handler(req:Request,jwtData:Optional[dict], validated_payload:LoginPayload, fetched_data:FetchedData, params:Any) -> ControllerResponse:
     try:
         # validate user
         ColorLog.Cyan(validated_payload)

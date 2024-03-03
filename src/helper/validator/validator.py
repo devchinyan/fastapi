@@ -7,6 +7,8 @@ from ...helper.cryptography.jwt import getJwtDATA
 from ...database.mongodb.base_repository import BaseRepository
 from ...api.route_model import HTTP_METHOD
 from ...helper.print.colorlog import ColorLog
+from ...helper.doc.doc_helper import FetchedData
+
 
 async def payload_deserialization(req:Request):
     """deserialize payload from request object"""
@@ -117,8 +119,8 @@ async def id_validator(ids:List[str]):
 
             fetch_response = await collection.fetch(id)
             fetched = [*fetched,*fetch_response]
-            
-        return fetched,None
+            fetched_data = FetchedData(fetched)
+        return fetched_data,None
     except Exception as err:
         ColorLog.Red("id_validator Err : ",err)
         return None,err
@@ -126,7 +128,7 @@ async def id_validator(ids:List[str]):
 async def validation_middleware(req:Request,payload_model:Type[BaseModel],exclude_regex:List[str],grants:List[str],validated_payload:Optional[BaseModel]=None):
     """main validation middleware"""
     try:
-        jwtData, fetched_data = None, []
+        jwtData, fetched_data = None, FetchedData([])
         if "*" not in grants:
             jwtData,err = jwt_validator(req)
             if err is not None: return None,None,None,err

@@ -2,7 +2,10 @@ from pydantic import BaseModel , Field
 from enum import Enum
 from typing import Any, List, Callable, Optional
 from fastapi import Request
-  
+from ..helper.doc.doc_helper import FetchedData
+from ..helper.cryptography.jwt import JWT_data
+
+
 class HTTP_METHOD(str, Enum):
     GET="GET"
     PUT="PUT"
@@ -14,7 +17,8 @@ class ControllerResponse(BaseModel):
     status_code: int = Field(default=200)
     err: Optional[Any] = Field(default=None)
 
-Controller =  Callable[[Request,Any, Any, Any, Any], ControllerResponse ]
+# def Controller(req:Request,jwtData:Optional[JWT_data], validated_payload:FetchPayload, fetched_data:FetchedData, params:Any)-> ControllerResponse:
+Controller =  Callable[[Request,Optional[JWT_data], Optional[BaseModel], FetchedData, Any], ControllerResponse ]
 
 class ControllerMatrix(BaseModel):
     func: Controller

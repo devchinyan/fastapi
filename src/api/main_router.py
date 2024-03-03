@@ -1,12 +1,13 @@
-from fastapi import FastAPI, APIRouter,Request, Body, Query
+from fastapi import FastAPI, APIRouter, Request, Query
 from pydantic import BaseModel as PydanticModel, Field
 from typing import Optional
 from .v1.v1_router import v1_route_matrices
 from .route_model import RouteMatrix, ControllerResponse
 from .public.public_router import public_route_matrices
 from ..helper.validator.validator import validation_middleware
-from ..helper.doc.doc_helper import addBaseFields
 from ..helper.print.colorlog import ColorLog
+from ..helper.doc.doc_helper import addBaseFields
+from ..helper.cryptography.jwt import JWT_data
 
 async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:Optional[PydanticModel]=None):
     try:
@@ -30,8 +31,9 @@ async def endpoint_func(req:Request,route_matrix:RouteMatrix,validated_payload:O
             return Response(success=False,error=True,status_code=400,error_object=str(err),data=None)
         
         if route_matrix.controller.add_base_field_collection is not None:
+            jwtData:JWT_data = jwtData
             collection_name = route_matrix.controller.add_base_field_collection
-            profile_id = jwtData.get("profileID") 
+            profile_id = jwtData.id
             added_based_field = addBaseFields(collection_name,validated_payload,profile_id)
             validated_payload = route_matrix.payloadModel(**added_based_field)
 
