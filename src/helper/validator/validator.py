@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Type, List, Optional
 from re import search, split
 from json import loads
-from ...helper.cryptography.jwt import getJwtDATA
+from ...helper.cryptography.jwt import getJwtDATA, JWT_data
 from ...database.mongodb.base_repository import BaseRepository
 from ...api.route_model import HTTP_METHOD
 from ...helper.print.colorlog import ColorLog
@@ -44,10 +44,10 @@ def jwt_validator(req:Request):
         ColorLog.Red("jwt_validator Err : ",err)
         return None, Exception(f"An error occurred: {err}")
     
-def role_validation(jwtData:dict,grants:List[str]):
+def role_validation(jwtData:JWT_data,grants:List[str]):
     """validate user role from jwt with endpoint grants"""
     try:
-        role = jwtData.get("role")
+        role = jwtData.user_role
         if(role in grants or "*" in grants):
             return True,None
         else:
@@ -118,7 +118,7 @@ async def id_validator(ids:List[str]):
             collection = BaseRepository(collection_name)
 
             fetch_response = await collection.fetch(id)
-            fetched = [*fetched,*fetch_response]
+            fetched = [*fetched,fetch_response]
             fetched_data = FetchedData(fetched)
         return fetched_data,None
     except Exception as err:
