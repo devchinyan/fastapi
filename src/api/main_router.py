@@ -1,8 +1,8 @@
-from fastapi import FastAPI, APIRouter, Request, Query
+from fastapi import FastAPI, APIRouter, Request, Query, Depends
 from pydantic import BaseModel as PydanticModel, Field
 from typing import Optional
 from .v1.v1_router import v1_route_matrices
-from .route_model import RouteMatrix, ControllerResponse
+from .route_model import RouteMatrix, ControllerResponse, HTTP_METHOD
 from .public.public_router import public_route_matrices
 from ..helper.validator.validator import validation_middleware
 from ..helper.print.colorlog import ColorLog
@@ -67,7 +67,11 @@ def main_router(app:FastAPI):
     public_router = APIRouter(prefix="", tags=["public"])
     for public_route_matrix in public_route_matrices:
         if public_route_matrix.payloadModel is not None:
-            async def respondHandler(payload:public_route_matrix.payloadModel,req:Request,r=Query(default=public_route_matrix,include_in_schema=False)): # type: ignore
+            async def respondHandler(
+                    req:Request,
+                    payload:public_route_matrix.payloadModel = Depends() if public_route_matrix.method == HTTP_METHOD.GET else None,
+                    r=Query(default=public_route_matrix,include_in_schema=False)
+                ): # type: ignore
                 return await endpoint_func(req,public_route_matrix,payload)
         else:
              async def respondHandler(req:Request,public_route_matrix=Query(default=public_route_matrix,include_in_schema=False)):
@@ -89,7 +93,7 @@ def main_router(app:FastAPI):
             if v1_group_route_matrix.payloadModel is not None:
                 async def respondHandler(
                         req:Request,
-                        payload:v1_group_route_matrix.payloadModel,
+                        payload:v1_group_route_matrix.payloadModel = Depends() if v1_group_route_matrix.method== HTTP_METHOD.GET else None,
                         r=Query(default=v1_group_route_matrix,include_in_schema=False)
                     ): 
                     res = await endpoint_func(req,r,payload)
