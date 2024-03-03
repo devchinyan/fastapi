@@ -29,7 +29,7 @@ arango =  ArangoDB(
     host="http://127.0.0.1:8529",
     username="root",
     password="root",
-    dbname="FAR_stack"
+    dbname="somedb"
 )
 
 db = ArangoDB.connect()
