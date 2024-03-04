@@ -1,5 +1,8 @@
 # python fastapi and MongoDB Template
-
+Notes:
+    - this was originally written to host in vercel as serverless
+    - to run as a dedicated server in EC2 or GoogleCloud, run python cluster.py or cluster.py 1
+    - this server support cluster mode for scaling based on number of cpu core run python cluster.py max
 
 ## Getting started
 ### 1. setup virtual env
@@ -17,6 +20,7 @@
 ```
 
 ### 4. Invoke Makefile commend
+note: for information refer to Makefile 
 ```shell
     make start
 ```
