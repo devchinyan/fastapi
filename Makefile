@@ -1,2 +1,6 @@
 start:
-	uvicorn main:app --host 0.0.0.0 --port 8000
+	python cluster.py 1
+cluster:
+	python cluster.py 4
+cluster_max:
+	python cluster.py max
