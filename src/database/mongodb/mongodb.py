@@ -6,6 +6,7 @@ from .collection import Collections
 from ...helper.print.colorlog import ColorLog
 from src.seeds.seed_model import SeedMatrix
 from asyncio import get_running_loop
+from src.config.config import config
 
 from pymongo.results import UpdateResult
 class Connection(BaseModel):
@@ -14,7 +15,7 @@ class Connection(BaseModel):
 
 class MongoDB:
     def __init__(self,username:str,password:str,dbname:str):
-        self.uri = f"mongodb+srv://{username}:{password}@fastapimongodb.pkafjzo.mongodb.net/{dbname}?retryWrites=true&w=majority"
+        self.uri = config.MONGODB_CONSTR
         self.username = username
         self.password = password
         self.dbname = dbname
