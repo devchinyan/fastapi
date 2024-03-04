@@ -5,6 +5,11 @@ Notes:
 >    - this server support cluster mode for scaling based on number of cpu core run python cluster.py max
 
 ## Getting started
+Notes:
+>    - there is a environment file located at ./env/test.env
+>    - the original .env had been .gitignore-ed  
+>    - please base on the sample data in ./env/test.env create your own ./env/.env file to run
+
 ### 1. setup virtual env
 ```shell
     python3 -m venv fastapi_venv
