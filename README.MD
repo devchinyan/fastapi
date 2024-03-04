@@ -24,3 +24,10 @@ note: for information refer to Makefile
 ```shell
     make start
 ```
+
+
+## Unit Testing
+### integration test
+```shell
+    pytest -v
+```
