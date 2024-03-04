@@ -4,8 +4,9 @@ from src.helper.print.colorlog import ColorLog
 from src.config.config import config
 from fastapi import Request
 from src.model.profile_model import ProfileModel
-from passlib.context import CryptContext
-from pydantic import BaseModel
+from .password import pwd_context
+
+
 
 class JWT_data(ProfileModel):
     accountID:str
@@ -13,7 +14,6 @@ class JWT_data(ProfileModel):
     user_role:str
     exp:datetime
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def getFingerPrint(req:Request):
     try:
@@ -22,11 +22,15 @@ def getFingerPrint(req:Request):
         accept_language = req.headers.get("Accept-Language", "None") 
 
         web_fingerprint = pwd_context.hash(f"{user_agent}{x_forwarded_for}{accept_language}")
-      
+        # web_fingerprint = f"{user_agent}{x_forwarded_for}{accept_language}"
+    
         return user_agent,x_forwarded_for,accept_language,web_fingerprint,None
     except Exception as error:
         ColorLog.Red(f"getFingerPrint error : {str(error)}")
         return None,None,None,None,error
+    
+def verifyFingerPrint(fingerprint1:str,hashed_fingerprint:str)->bool:
+    return pwd_context.verify(fingerprint1,hashed_fingerprint)
 
 def generateJWT(data: dict, expires_delta: timedelta = None)->str:
     to_encode = data.copy()

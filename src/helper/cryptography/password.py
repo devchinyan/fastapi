@@ -36,3 +36,4 @@ def verify_password(password:str,salt:str, hashed_password:str)->bool:
     base64_bytes = base64.b64encode(stringBytes)
     base64_string = base64_bytes.decode("ascii")
     return pwd_context.verify(base64_string, hashed_password)
+

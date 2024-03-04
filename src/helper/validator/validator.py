@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Type, List, Optional
 from re import search, split
 from json import loads
-from ...helper.cryptography.jwt import getJwtDATA, JWT_data
+from ...helper.cryptography.jwt import getJwtDATA, JWT_data, getFingerPrint, verifyFingerPrint
 from ...database.mongodb.base_repository import BaseRepository
 from ...api.route_model import HTTP_METHOD
 from ...helper.print.colorlog import ColorLog
@@ -38,6 +38,16 @@ def jwt_validator(req:Request):
 
         jwtData,getJWTErr = getJwtDATA(token)
         if getJWTErr is not None : return None,Exception("token mal-form") 
+
+        user_agent,x_forwarded_for,accept_language,_,getFingerPrintErr = getFingerPrint(req)
+        if getFingerPrintErr is not None : return None,Exception("Get Finger Print Error") 
+
+        jwtData:JWT_data = jwtData
+        
+        web_fingerprint = f"{user_agent}{x_forwarded_for}{accept_language}"
+        valid_fingerprint = verifyFingerPrint(web_fingerprint,jwtData.web_fingerprint)
+        if not valid_fingerprint: return None,Exception("invalid Finger Print") 
+
         return jwtData, None
 
     except Exception as err:
